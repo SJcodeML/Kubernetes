@@ -295,4 +295,42 @@ A few controllers operate as **both** mutating and validating:
 
 - Now u have to tell api when to call webhook for validation , so we  want to call webhook for only when creating, deleting,getting the pod so u have to mention it in the rules section,,, final conclusion **everytime when we create the pod it will call the webhook to vaidate** .
 
--What is TLS in kubernetes ? 
+- What is TLS in kubernetes ? 
+
+TLS (Transport Layer Security) in Kubernetes is used to secure communication between various components of the cluster. There are several key areas where TLS applies:
+
+**1. API Server Communication**
+- The API server exposes an HTTPS endpoint that all clients (kubectl, pods, other components) connect to over TLS
+- It presents a server certificate signed by the cluster's CA
+
+**2. Component-to-Component TLS**
+- **etcd**: API server connects to etcd over TLS
+- **kubelet**: API server talks to kubelets on worker nodes over TLS
+- **kube-scheduler, kube-controller-manager**: These use TLS certificates to authenticate to the API server
+
+**3. Certificate Types**
+- **CA (Certificate Authority)**: A root certificate that signs all other certificates in the cluster. Typically created during cluster initialization (e.g., `kubeadm init` generates it)
+- **Server certificates**: Presented by servers to prove their identity (e.g., API server cert)
+- **Client certificates**: Used by clients to authenticate themselves (e.g., kubectl's client cert)
+- **kubeconfig files**: Bundle the client certificate, key, and CA cert so tools like kubectl can authenticate
+
+**4. In-cluster Service TLS**
+- Pods and services can also use TLS for their own communication (e.g., a webhook server you mentioned)
+- Tools like cert-manager help automate certificate management for these use cases
+
+In your original sentence's context: the webhook server needs a **server certificate** for clients to verify its identity, and the API server (as the client in that connection) needs the **CA certificate** that signed the webhook server's certificate — this is the "CA bundle" you were referring to.
+
+-Q4 of lab:
+Create a TLS secret named webhook-server-tls in the webhook-demo namespace.
+This secret will be used by the admission webhook server for secure communication over HTTPS.
+We have already created below cert and key for webhook server which should be used to create secret.
+Certificate : /root/keys/webhook-server-tls.crt
+Key : /root/keys/webhook-server-tls.key
+
+SOL:
+- kubectl -n webhook-demo create secret tls webhook-server-tls --cert "certification file name"  --key "key file name"
+
+
+-Last answer due to this problem 
+    -runAsNonRoot: true — This setting tells Kubernetes to ensure the container does NOT run as the root user (user ID 0).
+    -runAsUser: 0 — This explicitly sets the user ID to 0, which is the root user.

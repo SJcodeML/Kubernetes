@@ -270,9 +270,19 @@ A few controllers operate as **both** mutating and validating:
 
  -------These all above are default admission controllers what if we want our own admission controller that has muatations and validations our own logic --------------
 
-- To support our customize admsiion controllers there are two special admission controllers available **Mutating Admission Webhook ** and **Validating Admission Webhook**
+- To support our customize admssion controllers there are two special admission controllers available **Mutating Admission Webhook ** and **Validating Admission Webhook**
 - you can host them in the kubernetes and outside 
 - After request go through all the built-in admission controllers it hits the webhook thats configured
 - When it hits webhook ser it makes the call to the admission webhook server like passing in admission review object      in json format
 -First we deploy/host the admission webhook then we make admission webhook configuration object .
 -You can make the server in any language you want like go,python
+-you can deploy webhook admission in any server or make it or deloy it in the kubernetes(make image and containerized it) ,if you deploy on kubernetes so you have to make **service** of it also 
+- Next step is to configure our cluster to reach out the service to validate and mutate the request ,for this we make 'webhook configuration object'
+
+- Communication between 'webhook server ' and 'apiserver' has to be over TLS so certificate bundle should be configured so ther server has configured with the pair of certificte,then certificate has to be made and pass to the client certificate ssca bundle
+- (Communication between the webhook server and the API server must be over TLS, so a certificate bundle should be configured. The server needs a pair of certificates (a certificate and its corresponding key), and the client's CA certificate bundle must include the CA that signed the server's certificate.) all these mentioned in the clientConfig section
+
+
+- Now u have to tell api when to call webhook for validation , so we  want to call webhook for only when creating, deleting,getting the pod so u have to mention it in the rules section,,, final conclusion **everytime when we create the pod it will call the webhook to vaidate** .
+
+-What is TLS in kubernetes ? 

@@ -1,24 +1,33 @@
 CHAPTER – 9 : SECURITY
-KUBECONFIG TOPIC 
+
+
+       **KUBECONFIG TOPIC **
 To change current context we use 
 -Kubectl config use-context <contextname>  --kubeconfig  /root/my-kube-config
 -	Kubectl is using default kube config file that is “kubeconfig” so we have to change the file bcoz we are not using that default file we are using my-kube-config , that’s y we run this command “--kubeconfig  /root/my-kube-config”
 -Default config file is located in the /root/.kube/config
+
 Q:13 is undone .
+
 RBAC (Role Base Access Control)
 -	K config view -> use to see the config file 
-Role : k create -f developer-role.yaml
+Role : 
+-k create -f developer-role.yaml
 -kubectl get roles 
 -kubectl describe role developer
-RoleBinding: k create -f devuser-developer-binding.yaml
+
+RoleBinding: 
+-k create -f devuser-developer-binding.yaml
 -kubectl get rolebindings
 -kubectl describe rolebindings devuser-developer-binding
+
 CHECKING ACCESS WHICH USER HAS WHAT PERMISSIONS ;
 -Kubectl auth can-i create deployments
- -kubectl auth can-i delete nodes
+-kubectl auth can-i delete nodes
 -kubectl auth can-i create deployments –as dev-user
 -kubectl auth can-i create pods –as dev-user
 -kubectl auth can-i create pods –as dev-user –namespace test
+
 RESOURCE NAMES:
 -If we have to give access to a certain developer to engage in specific pods so we define 
 resourceNames in rules section to give access to certain pods like :
@@ -28,6 +37,7 @@ rules :
 /etc/kubernetes/manifests/kube-apiserver.yaml
 -it will grep all authorization information from the file kube-apiserver.yaml
    ps -aux  | grep authorization
+
 Create the necessary roles and role bindings required for the dev-user to create, list and delete pods in the default namespace.Use the given spec:
 -	Role: developer
 -	Role Resources: pods

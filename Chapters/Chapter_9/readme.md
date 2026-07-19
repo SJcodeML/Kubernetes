@@ -404,7 +404,8 @@ we cannot make mistake in this file otherwise it will harm cluster . so we will 
 
 cp /etc/kubernetes/manifests/kube-apiserver.yaml  /root/kube-apiserver.yaml.backup
 
-then ls then open up the original file ->  vi /etc/kubernetes/manifests/kube-apiserver.yaml    then go to spec->containers->command    add these   --runtime-config=rabc.authorization.k8s.io/v1alpha1
+then ls then open up the original file ->  vi /etc/kubernetes/manifests/kube-apiserver.yaml    then go to spec->containers->command    add these   --runtime-config=rbac.authorization.k8s.io/v1alpha1
+then kubectl get pod -n kube-system
 
 
 -if we change in api-server.yaml file so the pods get deleted and remake it ?

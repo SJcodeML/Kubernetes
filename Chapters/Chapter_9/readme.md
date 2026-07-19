@@ -334,3 +334,51 @@ SOL:
 -Last answer due to this problem 
     -runAsNonRoot: true — This setting tells Kubernetes to ensure the container does NOT run as the root user (user ID 0).
     -runAsUser: 0 — This explicitly sets the user ID to 0, which is the root user.
+
+
+**API Version and Deprecation**
+- To know about all resources short names , api versions etc
+   - kubectl api-resources    
+
+
+
+Q4: what is the preferred version for authorization.k8s.io api group?
+
+- Sol: kubectl proxy 8001&
+- curl localhost:8001/apis/authorization.k8s.io
+
+
+
+- What is group term means ?
+
+The "group" IS the folder name
+When you write apiVersion: apps/v1:
+
+apps = the group (the folder name)
+v1 = the version (inside that folder)
+   APIs (API Server)
+├── Core Group (no folder name — like files in root directory)
+│   └── v1/
+│       ├── Pod
+│       ├── Service
+│       ├── Namespace
+│       └── ConfigMap
+│
+├── apps/  ← THIS IS THE GROUP NAME
+│   └── v1/
+│       ├── Deployment
+│       ├── StatefulSet
+│       └── ReplicaSet
+│
+├── batch/  ← ANOTHER GROUP NAME
+│   └── v1/
+│       ├── Job
+│       └── CronJob
+│
+└── networking.k8s.io/  ← YET ANOTHER GROUP
+    └── v1/
+        ├── Ingress
+        └── NetworkPolicy
+
+- One API group can support multipe versions at a time .
+

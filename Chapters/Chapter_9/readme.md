@@ -382,3 +382,180 @@ v1 = the version (inside that folder)
 
 - One API group can support multipe versions at a time .
 
+
+        -----------QUESTION 5 ------------------
+- what is the meaning of the following?   
+- kubectl proxy8001&
+- curl localhost:8001/apis/authorization.k8s.io
+ Sol:  When you run these commands, you are interacting with the Kubernetes API server from your local machine.
+
+Here is a breakdown of exactly what each part means and what it is doing:
+
+1. kubectl proxy --port=8001 &
+(Note: It looks like you have a small typo in your command, it should typically be kubectl proxy --port=8001 & or just kubectl proxy & which defaults to port 8001).
+
+kubectl proxy: This creates a secure gateway (a proxy) between your local machine and the Kubernetes API server running in your cluster. It handles authentication automatically, meaning you don't have to pass your cluster certificates or tokens manually when making requests.
+
+8001: This specifies the local port on your machine where the proxy will listen.
+
+&: This is a Linux/Unix background operator. It tells your terminal to run the proxy in the background, allowing you to keep using the same terminal window for other commands.
+
+we cannot make mistake in this file otherwise it will harm cluster . so we will copy this file so we can revert back . 
+
+cp /etc/kubernetes/manifests/kube-apiserver.yaml  /root/kube-apiserver.yaml.backup
+
+then ls then open up the original file ->  vi /etc/kubernetes/manifests/kube-apiserver.yaml    then go to spec->containers->command    add these   --runtime-config=rabc.authorization.k8s.io/v1alpha1
+
+
+-if we change in api-server.yaml file so the pods get deleted and remake it ?
+
+Yes, absolutely. If you modify the `kube-apiserver.yaml` file, the API server pod will automatically be deleted and recreated.
+
+Here is exactly how and why that happens in Kubernetes:
+
+### The Secret: Static Pods
+
+The API server runs as a **Static Pod**. Unlike normal pods that are managed by a Deployment or ReplicaSet over the network, static pods are managed directly by the **kubelet** on that specific master/control-plane node.
+
+* **The Watcher:** The kubelet constantly watches the manifest directory (usually `/etc/kubernetes/manifests/`) for any changes to the YAML files.
+* **The Action:** The moment you save changes to `kube-apiserver.yaml`, the kubelet detects the file modification, immediately terminates the old API server container, and spins up a new one using your updated configuration.
+
+---
+
+### ⚠️ Crucial Things to Keep in Mind
+
+Because the API server is the brain of your cluster, changing this file carries a few risks:
+
+* **Temporary Downtime:** While the pod is restarting (remaking), `kubectl` commands will temporarily fail with connection errors. It usually takes anywhere from 10 to 30 seconds to come back online.
+* **Syntax Errors = CrashLoop:** If you make a typo or indentation error in the YAML file, the kubelet will kill the old working pod but **will fail to start the new one**. Your control plane will go down, and `kubectl` will stop working entirely.
+
+> 💡 **Tip:** If you break the file and `kubectl` stops responding, don't panic. You can't fix it via `kubectl`, but you can just SSH back into the master node, fix the syntax error directly in `/etc/kubernetes/manifests/kube-apiserver.yaml`, and the kubelet will try to bring it up again.
+
+
+----------What is control plane-----------------------
+
+Think of the **control plane** as the **brain and nervous system** of your Kubernetes cluster.
+
+While your actual applications run inside containers on the *worker nodes*, the control plane sits on the *master nodes* making all the decisions—like scheduling pods, detecting when a container dies, and handling your `kubectl` commands.
+
+If the control plane goes down, your running applications will usually keep running, but you lose the ability to manage them, scale them, or deploy anything new.
+
+Here are the main components that make up the control plane:
+
+### 1. `kube-apiserver` (The Front Door)
+
+This is the component you were just modifying. It is the central hub of the control plane. Everything—`kubectl`, the worker nodes, and the other control plane components—must talk to the API server to get anything done.
+
+### 2. `etcd` (The Memory)
+
+The cluster's database. It is a highly available, distributed key-value store that holds the absolute "source of truth" for your cluster. Every single detail (what pods are running, what secrets exist, your cluster configuration) is saved here.
+
+### 3. `kube-scheduler` (The Matchmaker)
+
+When you ask Kubernetes to run a new pod, the scheduler looks at your cluster's worker nodes, checks their available CPU and memory, and decides exactly which node is the best fit to host that pod.
+
+### 4. `kube-controller-manager` (The Office Manager)
+
+This runs background loops that regulate the state of the cluster. For example:
+
+* **Node Controller:** Notices if a worker node goes offline.
+* **Replication Controller:** Ensures the exact number of pod replicas you asked for are always running. If a pod dies, this controller is what tells the cluster to create a new one.
+
+---
+
+### Analogy: The Restaurant
+
+If a Kubernetes cluster were a busy restaurant:
+
+* **The Worker Nodes** are the kitchen staff actually cooking the food (running your apps).
+* **The Control Plane** is the manager, the host at the front door, and the ticketing system.
+
+If the management (control plane) suddenly walks out, the kitchen might finish cooking the orders they already have, but no new guests can be seated, no new orders can be taken, and if something goes wrong in the kitchen, there is no one there to fix it.
+
+--------------------------what does kubectl convert plugins do ? ----------------------------
+
+The `kubectl convert` plugin is a tool used to **automatically convert Kubernetes manifest files between different API versions**.
+
+As Kubernetes evolves, older API versions are deprecated and eventually removed (for example, moving a deployment from `apps/v1beta1` to `apps/v1`, or an ingress from `extensions/v1beta1` to `networking.k8s.io/v1`). Instead of manually updating the YAML fields, indentation, and group names yourself, this plugin handles the migration for you.
+
+---
+
+### How It Works (With an Example)
+
+If you have an old YAML file using an outdated API version, you can pipe or pass it to the plugin to output the modern, updated version.
+
+**The Command:**
+
+```bash
+kubectl convert -f old-deployment.yaml --output-version apps/v1
+
+```
+
+**What it does behind the scenes:**
+
+1. It reads your `old-deployment.yaml`.
+2. It maps the old schema fields to the newer `apps/v1` schema fields.
+3. It prints out (or saves) a clean, compliant `apps/v1` YAML file ready to be deployed to a modern cluster.
+
+---
+
+### Key Things to Know
+
+* **It’s an optional plugin:** In older versions of Kubernetes, this command was built directly into `kubectl`. In modern versions, it has been stripped out of the core binary and must be downloaded separately as a plugin (`kubectl-convert`).
+* **Great for Cluster Upgrades:** When you are preparing to upgrade your control plane to a newer Kubernetes version, you can run this tool over your entire GitOps or template repository to ensure none of your manifests break when the old APIs are officially removed.
+
+
+-----------what does----------- chmod +x kubectl-convert ------------ command do-------------------------------
+
+The command `chmod +x kubectl-convert` makes the `kubectl-convert` plugin file **executable**.
+
+Here is the exact breakdown of what it means:
+
+* **`chmod`** (Change Mode): The Linux/Unix command used to change the access permissions of a file or directory.
+* **`+x`**: This flag grants **e`x`ecutable** permissions. It tells the operating system that this file is a runnable program/binary, not just a plain text or data file.
+* **`kubectl-convert`**: The target file (the plugin binary you likely just downloaded).
+
+### Why do you need to run this?
+
+When you download a binary from the internet or build it locally via a terminal, Linux usually saves it with safe, read-only or read-write permissions by default (`-rw-r--r--`). If you try to run it immediately like this:
+
+```bash
+./kubectl-convert
+
+```
+
+The terminal will reject it and throw a **`Permission denied`** error.
+
+Running `chmod +x` changes those permissions, allowing you to execute the plugin directly. Once you run it, you can move the file to your system path (like `/usr/local/bin/`) so that `kubectl` can discover it and let you use the `kubectl convert` command seamlessly!
+
+
+
+
+
+---we will move this file        mv kubectl-convert /usr/local/bin
+
+This command **moves the executable plugin to a global system directory** (`/usr/local/bin`).
+
+### What it accomplishes:
+
+* It places the tool into your system's `PATH`.
+* It allows `kubectl` to automatically detect it, meaning you can now run `kubectl convert` from **any** directory in your terminal.
+
+*(Note: If you get a "Permission denied" error, run it with `sudo`: `sudo mv kubectl-convert /usr/local/bin`)*
+
+
+-------------------------QUESTION NO 7 ---------------------------------
+
+ingress manifest file is already given under the /root/directory called ingress-old.yaml  . with the help of the kubectl convert command . chnage the deprecated API version to the networking.k8s.io/v1 and create the resource ?
+
+SOLUTION:
+ -cat ingress-old.yaml
+ then we have to change the v1beta1 to v1 by using kubectl-convert . use this following command 
+
+ -kubectl-convert -f ingress-old.yaml  --output-version networking.k8s.io/v1
+
+ the upper didnot change the original file .so we will pipeit to the new file then we will apply this file for making ingress .
+
+ -kubectl-convert -f ingress-old.yaml --output-version networking.k8s.io/v1 > ingress-new.yaml
+
+ then ls then            kubectl apply -f ingress-new.yaml

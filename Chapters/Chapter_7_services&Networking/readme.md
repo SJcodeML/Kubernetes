@@ -1,0 +1,2 @@
+- All pods are allow to communicate with other pods in cluster through IP addresses and services . 
+- Network Policies : It is an object  

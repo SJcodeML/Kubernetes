@@ -66,4 +66,17 @@ Example - kubectl create ingress ingress-test --rule="wear.my-online-store.com/w
 
 # INGRESS NETWORKING - 1 
 
+# INGRESS NETWORKING - 2
 
+"GET /watch HTTP/1.1" 308 171 "-" "Mozilla/5.0 
+
+what does this particular url means is there any problem
+
+The URL /watch returning a 308 status code means the request is being permanently redirected to a different URL (likely https:// instead of http://, or to /watch/ with a trailing slash).
+
+A 308 Permanent Redirect is generally not a problem — it's a standard HTTP behavior where:
+
+HTTP → HTTPS upgrade – The server is redirecting an unencrypted http:// request to https://. This is normal and expected for most modern websites.
+
+Missing trailing slash – Some servers redirect /watch to /watch/ to conform to their URL routing rules.
+So in short: the request was successful in the sense that the server responded — it just told the client "go here instead." The browser or client should follow the redirect and end up at the correct destination. No error.

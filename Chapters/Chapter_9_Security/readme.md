@@ -71,7 +71,7 @@ Solution:
 -k create clustertole --help
 -k create clusterrolebinding --help
 
--we create ckuster role 
+-we create cluster role 
 kubectl create clusterrole michelle-role --verb=get,list,watch --resourc
 e=nodes
 

@@ -1,5 +1,10 @@
 ### Certification Tip: Imperative Commands
 
+kubectl run heello-minikube          -> is used to deploy an application on the cluster 
+
+kubectl cluster-info                 -> is used to see the information about the cluster 
+
+kubectl get nodes                     -> is used to get the nodes part of the cluster 
 
 While you would be working mostly the declarative way - using definition files, imperative commands can help in getting one-time tasks done quickly, as well as generate a definition template easily. This would help save a considerable amount of time during your exams.
 

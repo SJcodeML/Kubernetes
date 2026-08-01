@@ -560,3 +560,93 @@ SOLUTION:
  -kubectl-convert -f ingress-old.yaml --output-version networking.k8s.io/v1 > ingress-new.yaml
 
  then ls then            kubectl apply -f ingress-new.yaml
+
+ -------------------------------------
+ ADMISSION CONTROLLERS
+
+ k exec -it kube-apiserver-controlplane -n kube-system -- kube-apiserver -h | grep 'enable-admission-plugins'
+
+ Let me break down this command piece by piece.
+
+## Overall purpose
+This command runs inside a Kubernetes control plane node to look up the help documentation for the kube-apiserver, and filters out the line that explains the `--enable-admission-plugins` flag.
+
+## Command breakdown
+
+**`k`** — Short alias for `kubectl`, the Kubernetes command-line tool you use to talk to your cluster.
+
+**`exec`** — The kubectl subcommand that runs a command *inside* a running container (like `docker exec`).
+
+**`-it`** — Two flags combined:
+- `-i` (interactive): keeps stdin open so you can type into the container
+- `-t` (tty): allocates a pseudo-terminal for proper output formatting
+
+**`kube-apiserver-controlplane`** — The name of the Pod/container you're targeting. `kube-apiserver` is the brain of Kubernetes — it handles all API requests. The `-controlplane` suffix is the naming convention Control Plane nodes use for hostname-based pod names.
+
+**`-n kube-system`** — The `-n` flag specifies the namespace. `kube-system` is where Kubernetes puts its own core system components (like the apiserver, etcd, scheduler, etc.).
+
+**`--`** — The "end of kubectl options" separator. Everything after this is treated as a command to run *inside* the container, not as a kubectl flag.
+
+**`kube-apiserver -h`** — Inside the container, it runs the apiserver binary with `-h` (help flag), which prints out all the command-line flags the apiserver supports.
+
+**`|`** — A pipe. It takes the output of the previous command and feeds it as input to the next command.
+
+**`grep 'enable-admission-plugins'`** — `grep` is a text search tool. It filters the help output and shows only the lines containing `enable-admission-plugins`. Admission plugins are the security/validation hooks that check requests before they're accepted by the apiserver.
+
+---
+
+**In a nutshell:** *"Run kubectl to get inside the apiserver pod, ask it for its help text, and pull out just the line about admission plugins."*
+
+This is a common way to check what admission plugins are available or how a flag works when you're troubleshooting a cluster.
+
+stdin:**stdin** (standard input) is simply the place a program reads its input from — by default, that's your keyboard.
+
+Here's the analogy: think of a program like a person. It has three standard "channels":
+
+- **stdin** (standard input) — what it *hears* (reads). Default: your keyboard.
+- **stdout** (standard output) — what it *says* (writes). Default: your terminal screen.
+- **stderr** (standard error) — where it reports errors. Default: also your terminal screen.
+
+So when you run `kubectl exec -it ... -- bash`, the `-i` flag tells kubectl: *"Keep my keyboard connected to that container's stdin."* Without `-i`, the container gets an empty/closed input stream, so if you start an interactive shell, it has nothing to read from and exits immediately — you can't type anything.
+
+That's exactly why `-t` is usually paired with `-i`: `-i` connects the input, and `-t` makes a proper terminal so line editing, colors, and prompts work correctly. Together (`-it`) you get a fully interactive session, like you were SSH'd into the machine.
+
+------
+This command will list all enable and disable plugins 
+
+ps  = process
+
+Command : ps -ef | grep kube-apiserver | grep admission-plugins
+
+------------------------------
+What is TLS ?
+
+**TLS** (Transport Layer Security) is the cryptographic protocol that encrypts data traveling between two parties over a network — it's what makes HTTPS secure. Before TLS encrypts the connection, there's a "handshake" where the two sides verify each other's identity using certificates.
+
+Here's the core idea:
+
+**Certificates** — A TLS certificate is a digital ID that proves "I am who I say I am." It contains a public key plus identity info (domain, org), and it's signed by a trusted authority.
+
+**Public/private keys** — A key pair. The private key stays secret on your server; the public key is shared with anyone who wants to talk to you. Data encrypted with one can only be decrypted by the other.
+
+So when your webhook server presents its certificate, the apiserver can verify it's genuinely *your* server (not an imposter) and establish an encrypted channel.
+
+---
+
+### Back to your Kubernetes command
+
+When you run:
+
+```
+kubectl create secret tls webhook-server-tls --cert=... --key=...
+```
+
+you're creating a **TLS secret** — a Kubernetes object that securely stores your server's certificate and its private key. This is the standard way webhook servers in Kubernetes hold their credentials, because:
+
+- The **certificate** (`tls.crt`) gets handed out to clients (like the kube-apiserver) to prove identity.
+- The **private key** (`tls.key`) stays secret inside the cluster and is used to decrypt incoming requests.
+- Storing them as a secret lets you mount them into your webhook pod via a volume, keeping the key out of container images and source code.
+
+Both values are base64-encoded inside the secret so Kubernetes stores them as opaque text.
+
+**In short:** TLS = encryption + identity verification using certificates. Your command packages that certificate and its private key into a reusable, secured Kubernetes secret that your webhook server will use to authenticate itself and communicate securely with the API server.

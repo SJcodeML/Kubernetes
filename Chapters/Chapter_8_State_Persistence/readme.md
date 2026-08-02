@@ -51,3 +51,10 @@ Container are tansiant in nature ,containers  are required to finish as they com
 
 ----------------------------Persistent Volumes---------------------------------------
 
+k replace --force -f /tmp/kubectl-edit-513546.yaml 
+
+if u did not do :wq! so the whatever u have edit to the file it will not save the changes then u can do this command it will replace the file (means old pod will be deleted and new one will be created according to the file)
+
+----------------------------------
+what is cd~
+cd ~ is a shell/bash command (the cd command from the GNU coreutils), not a Kubernetes concept. It means "change directory to the current user's home directory." The ~ (tilde) is shorthand for your home directory, so cd ~ is essentially the same as cd with no arguments, or cd $HOME.

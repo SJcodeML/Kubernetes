@@ -650,3 +650,11 @@ you're creating a **TLS secret** — a Kubernetes object that securely stores yo
 Both values are base64-encoded inside the secret so Kubernetes stores them as opaque text.
 
 **In short:** TLS = encryption + identity verification using certificates. Your command packages that certificate and its private key into a reusable, secured Kubernetes secret that your webhook server will use to authenticate itself and communicate securely with the API server.
+
+-------------------------------
+Q:Identify which API group a resource called job is part of?
+-k explain job
+
+
+
+Q:What is the preferred version for authorization.k8s.io api group?

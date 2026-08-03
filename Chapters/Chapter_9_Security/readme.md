@@ -658,3 +658,26 @@ Q:Identify which API group a resource called job is part of?
 
 
 Q:What is the preferred version for authorization.k8s.io api group?
+k proxy 8001$
+curl localhost:8001/apis/authorization.k8s.io
+
+
+-------------------
+Q:Enable the v1alpha1 version for rbac.authorization.k8s.io API group on the controlplane node.
+
+
+Note: If you made a mistake in the config file could result in the API server being unavailable and can break the cluster.
+
+A:cp /etc/kubernetes/manifests/kube-apiserver.yaml /root/kube-apiserver.yaml.backup    ->it eill copy the file 
+
+then -> vi /etc/kubernetes/manifests/kube-apiserver.yaml
+then add the below line in the spec->containers->command 
+    --runtime-config=rbac.authorization.k8s.io/v1alpha1
+then 
+    k get pods -n kube system 
+all the pods should be in the running stage but u have to wait for a while . 
+
+----------------------
+question no 6 
+
+

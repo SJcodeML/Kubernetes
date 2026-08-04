@@ -680,4 +680,71 @@ all the pods should be in the running stage but u have to wait for a while .
 ----------------------
 question no 6 
 
+Install the kubectl convert plugin on the controlplane node.
 
+
+If unsure how to install then refer to the official k8s documentation page which is available at the top right panel.
+
+A: first install the kubectl convert plugin from the documentation of the kubernetes link is given below
+
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install kubectl convert plugin
+
+you will find this  curl  ->-LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl-convert"
+
+insert and enter 
+then -> chmod +x kubectl-convert
+
+what does this above chmod command do ?
+The command `chmod +x kubectl-convert` makes the file `kubectl-convert` executable.
+
+## What it does
+
+`chmod` changes file permissions on Unix-like systems (Linux, macOS). The `+x` flag adds the **execute permission** to the file. Being executable means you can run the file directly as a program or script by typing its name (e.g., `./kubectl-convert`).
+
+## Context
+
+This is typically done after downloading `kubectl-convert` — a Kubernetes plugin that converts between different Kubernetes API versions (for instance, converting deprecated manifest files to newer versions). When you download a binary via `curl` or `wget`, it usually doesn't have the execute permission set by default, so you need to run this command before you can use it.
+
+Once it's executable, you'd typically also:
+- Move it into your `PATH` (e.g., `/usr/local/bin`)
+- Then run it via `kubectl convert ...`
+
+mv kubectl-convert /usr/local/bin
+what does this command do ?
+A: The command `mv kubectl-convert /usr/local/bin` **moves** the `kubectl-convert` file from your current directory into the `/usr/local/bin` directory.
+
+## What it does
+
+- `mv` = **move**, which relocates a file from one location to another (it also works to rename files).
+- `kubectl-convert` = the file you want to move, located in your current directory.
+- `/usr/local/bin` = the destination directory. This is a standard location on Unix-like systems where executables are installed.
+
+## Why do this?
+
+After making the file executable (with the `chmod +x` from your previous step), moving it to `/usr/local/bin` puts it on your system's `PATH`. This means you can now run it from anywhere by just typing `kubectl-convert`, without needing to specify its full path or being in its directory.
+
+Typically you'd verify it works afterward with:
+
+```
+kubectl-convert --help
+```
+
+## Note
+
+If a file named `kubectl-convert` already exists in `/usr/local/bin`, this command will **overwrite** it. If you want to be safe, you could use `mv -i` which will prompt you before overwriting.
+
+
+-----------------------
+Question n0 7 
+Q: Ingress manifest file is already given under the /root/ directory called ingress-old.yaml.
+
+With help of the kubectl convert command, change the deprecated API version to the networking.k8s.io/v1 and create the resource.
+
+A: k-convert -f file_name --output-version networking.k8s.io/v1
+it will not make changes in the original file so we have to pipe it in the new file then create a pod again 
+
+k-convert -f file_name --output-version networking.k8s.io/v1 > ingress_new.yaml
+
+ls
+
+k apply -f ingress_new.yaml

@@ -1,0 +1,40 @@
+# apiVerion: v1 
+# kind: Pod
+# metadata:
+#    name: pv-recycler
+#    namespace: default
+# spec:
+#     restartPolicy: Never
+#     volumes: 
+#     - name: vol
+#       hostpath:
+#         path:/any/path/it/will/be/replaced
+#     containers:
+#     - name: pv-recycler
+#       image: "registry.k8s.io/busybox"
+#       command: [dfksdf]
+#       volumeMounts:
+#       - name: vol
+#         mountPath: /scrub
+
+
+apiVersion: v1 
+kind: Pod
+metadata:
+  name: pv-recycler
+  namespace: default
+spec: 
+  restartPolicy: Never
+  volumes:
+  - name: vol
+    hostpath: 
+    path: /any/path/it/will/be/replaced
+  containers:
+  - name: pv-recycler
+    image: "jkshdkfjhdkf"
+    command: []
+    columeMounts:
+    - name: vol
+      mountPath: /scrub
+
+   

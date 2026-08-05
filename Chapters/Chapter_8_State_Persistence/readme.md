@@ -58,3 +58,15 @@ if u did not do :wq! so the whatever u have edit to the file it will not save th
 ----------------------------------
 what is cd~
 cd ~ is a shell/bash command (the cd command from the GNU coreutils), not a Kubernetes concept. It means "change directory to the current user's home directory." The ~ (tilde) is shorthand for your home directory, so cd ~ is essentially the same as cd with no arguments, or cd $HOME.
+
+--------------------------------
+Question NO: 4
+Configure a volume to store these logs at /var/log/webapp on the host. Use the spec provided below
+
+A: k edit pod webapp
+add there volume and volume mounts according to the spec
+then ->
+k replace --force -f /tmp/kubectl-edit-294542.yaml
+cd /var/log/webapp
+ls
+cat app.log
